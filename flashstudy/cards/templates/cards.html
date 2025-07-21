@@ -2,38 +2,72 @@
 {% load static %}
 
 {% block content %}
-  <!-- Left Column: Card Stack -->
-  <div class="card-area left">
+<!-- Left Column: Card Stack -->
+<div class="card-area left">
     <div class="card-container">
-      <div class="card-content">
-        <h1>Flash card 1</h1>
-        <h2>Topic</h2>
-        <p>Description</p>
-      </div>
-      <div class="card-content">
-        <h1>Flash Card 2</h1>
-        <h2>Topic</h2>
-        <p>Description</p>
-      </div>
+        <h2>All Cards</h2>
+        {% if cards %}
+            {% for card in cards %}
+            <div class="card-content" data-card-id="{{ card.id }}">
+                <h3>{{ card.question|truncatewords:5 }}</h3>
+                <p class="card-deck">{{ card.deck.name }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card-content">
+                <p>No cards available. <a href="/admin/">Create some cards</a> in the admin panel!</p>
+            </div>
+        {% endif %}
     </div>
-  </div>
+</div>
 
-  <!-- Center Column: Active Card -->
-  <div class="card-area center">
-    <!-- Placeholder for active flash card -->
-    <div class="card-content active">
-      <h1>Active Card</h1>
-      <h2>Topic</h2>
-      <p>Description</p>
+<!-- Center Column: Active Card -->
+<div class="card-area center">
+    {% if cards %}
+        {% with cards.first as first_card %}
+        <div class="card-content active" id="active-card">
+            <h2>{{ first_card.question }}</h2>
+            <div class="card-answer" id="card-answer" style="display: none;">
+                <p><strong>Answer:</strong> {{ first_card.answer }}</p>
+            </div>
+            <button onclick="toggleAnswer()" class="reveal-btn">Show Answer</button>
+        </div>
+        {% endwith %}
+    {% else %}
+        <div class="card-content active">
+            <h2>No cards to study</h2>
+            <p>Create some flashcards first!</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Right Column: Extras -->
+<div class="card-area right">
+    <h2>Study Notes</h2>
+    <textarea placeholder="Write your notes here..."></textarea>
+    <button>Save Notes</button>
+    
+    <div class="study-controls">
+        <h3>How did you do?</h3>
+        <button class="difficulty-btn" data-difficulty="1">Again</button>
+        <button class="difficulty-btn" data-difficulty="2">Hard</button>
+        <button class="difficulty-btn" data-difficulty="3">Good</button>
+        <button class="difficulty-btn" data-difficulty="4">Easy</button>
     </div>
-  </div>
+</div>
 
-  <!-- Right Column: Extras -->
-  <div class="card-area right">
-    <h1>Notes</h1>
-
-    <input id="submitBtn" type="text">
-    <button>Submit</button>
-  </div>
-
-  {% endblock %}
+<script>
+function toggleAnswer() {
+    const answer = document.getElementById('card-answer');
+    const btn = document.querySelector('.reveal-btn');
+    
+    if (answer.style.display === 'none') {
+        answer.style.display = 'block';
+        btn.textContent = 'Hide Answer';
+    } else {
+        answer.style.display = 'none';
+        btn.textContent = 'Show Answer';
+    }
+}
+</script>
+{% endblock %}
