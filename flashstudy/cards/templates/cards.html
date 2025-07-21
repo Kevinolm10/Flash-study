@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block content %}
-  <h1>Flash Study</h1>
   <!-- Left Column: Card Stack -->
   <div class="card-area left">
     <div class="card-container">
@@ -31,7 +30,10 @@
 
   <!-- Right Column: Extras -->
   <div class="card-area right">
-    <!-- Could add notes, progress, etc. -->
+    <h1>Notes</h1>
+
+    <input id="submitBtn" type="text">
+    <button>Submit</button>
   </div>
 
   {% endblock %}
