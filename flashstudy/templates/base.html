@@ -13,9 +13,18 @@
     {% endblock %}
 </head>
 <body>
-    <header>
+<header>
+    <div class="header-content">
         <h1>Flash Study</h1>
-    </header>
+        <nav>
+            <ul>
+                <li><a href="/admin/cards/card/">Edit Flashcards</a></li>
+                <li><a href="/admin/cards/deck/">Manage Decks</a></li>
+                <li><a href="/">Study</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
     
     <main>
         {% block content %}
