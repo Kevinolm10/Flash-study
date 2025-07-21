@@ -1,19 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Page Title</title>
-  <!-- You can add CSS files here -->
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header>
-	<h1>Flash Study</h1>
+{% extends "base.html" %}
+{% load static %}
 
-  </header>
-
-<main>
+{% block content %}
+  <h1>Flash Study</h1>
   <!-- Left Column: Card Stack -->
   <div class="card-area left">
     <div class="card-container">
@@ -44,11 +33,5 @@
   <div class="card-area right">
     <!-- Could add notes, progress, etc. -->
   </div>
-</main>
 
-	
-
-  <script src='index.js'></script>
-</body>
-</html>
-
+  {% endblock %}

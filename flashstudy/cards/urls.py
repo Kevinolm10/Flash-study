@@ -4,5 +4,5 @@ from . import views
 
 """  Checkout URLs  """
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.homePage, name='cards'),
 ]
