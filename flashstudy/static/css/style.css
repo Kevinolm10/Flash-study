@@ -13,7 +13,7 @@ header {
 
 main {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr; /* Left, Center, Right */
+  grid-template-columns: 1fr 1fr 1fr; /* Left, Center, Right */
   gap: 10px;
   padding: 20px;
   height: 100vh; /* Optional for full-height layout */
@@ -24,6 +24,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  border: 1px solid black;
 }
 
 /* Stack cards vertically in left */
