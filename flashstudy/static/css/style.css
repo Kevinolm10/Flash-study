@@ -193,6 +193,38 @@ main {
   box-shadow: inset 0 2px 8px rgba(102, 126, 234, 0.1);
 }
 
+/* Pagination controls styling */
+.pagination {
+    text-align: center;
+    margin: 20px 0;
+    padding: 10px;
+}
+
+.pagination a {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 0 4px;
+    text-decoration: none;
+    border: none;
+    border-radius: 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.pagination a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.pagination .current {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 0 4px;
+    font-weight: bold;
+}
+
 /* Button Styling */
 .reveal-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
