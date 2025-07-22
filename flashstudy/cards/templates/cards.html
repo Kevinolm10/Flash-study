@@ -1,18 +1,34 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% block content %}
 <!-- Left Column: Card Stack -->
 <div class="card-area left">
     <div class="card-container">
         <h2>All Cards</h2>
-        {% if cards %}
-            {% for card in cards %}
+        {% if page_obj %}
+            {% for card in page_obj %}
             <div class="card-content" data-card-id="{{ card.id }}">
                 <h3>{{ card.question|truncatewords:5 }}</h3>
                 <p class="card-deck">{{ card.deck.name }}</p>
             </div>
             {% endfor %}
+            
+            <!-- Add pagination controls -->
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                {% endif %}
+            </div>
         {% else %}
             <div class="card-content">
                 <p>No cards available. <a href="/admin/">Create some cards</a> in the admin panel!</p>
@@ -23,8 +39,8 @@
 
 <!-- Center Column: Active Card -->
 <div class="card-area center">
-    {% if cards %}
-        {% with cards.first as first_card %}
+    {% if page_obj %}
+        {% with page_obj.object_list.first as first_card %}
         <div class="card-content active" id="active-card">
             <h2>{{ first_card.question }}</h2>
             <div class="card-answer" id="card-answer" style="display: none;">
@@ -41,7 +57,7 @@
     {% endif %}
 </div>
 
-<!-- Right Column: Extras -->
+<!-- Rest of your template stays the same -->
 <div class="card-area right">
     <h2 style="text-align: center;">Study Notes</h2>
     <textarea placeholder="Write your notes here..."></textarea>
@@ -57,6 +73,7 @@
 </div>
 
 <script>
+// Your existing JavaScript stays the same
 function toggleAnswer() {
     const answer = document.getElementById('card-answer');
     const btn = document.querySelector('.reveal-btn');
@@ -69,20 +86,20 @@ function toggleAnswer() {
         btn.textContent = 'Show Answer';
     }
 }
+
 document.addEventListener('DOMContentLoaded', function() {
     const cards = document.querySelectorAll('.card-content[data-card-id]');
     
     cards.forEach(card => {
         card.addEventListener('click', function() {
-            displayCard(this); // 'this' refers to the clicked card
+            displayCard(this);
         });
     });
 });
 
 function displayCard(clickedCard) {
-    // Your display logic here
     console.log('Card clicked:', clickedCard.getAttribute('data-question'));
-}
 
+}
 </script>
 {% endblock %}
