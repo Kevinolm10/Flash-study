@@ -7,11 +7,14 @@
         <h2>All Cards</h2>
         {% if page_obj %}
             {% for card in page_obj %}
-            <div class="card-content" data-card-id="{{ card.id }}">
-                <h3>{{ card.question|truncatewords:5 }}</h3>
-                <p class="card-deck">{{ card.deck.name }}</p>
-            </div>
-            {% endfor %}
+	 <div class="card-content" 
+          data-card-id="{{ card.id }}"
+          data-question="{{ card.question }}"
+          data-answer="{{ card.answer }}">
+    	 <h3>{{ card.question|truncatewords:5 }}</h3>
+   	 <p class="card-deck">{{ card.deck.name }}</p>
+	</div>
+        	{% endfor %}
             
             <!-- Add pagination controls -->
             <div class="pagination">
@@ -42,9 +45,9 @@
     {% if page_obj %}
         {% with page_obj.object_list.first as first_card %}
         <div class="card-content active" id="active-card">
-            <h2>{{ first_card.question }}</h2>
+            <h2 id="active-question">{{ first_card.question }}</h2>
             <div class="card-answer" id="card-answer" style="display: none;">
-                <p><strong>Answer:</strong> {{ first_card.answer }}</p>
+                <p><strong>Answer:</strong> <span id="active-answer">{{ first_card.answer }}</span></p>
             </div>
             <button onclick="toggleAnswer()" class="reveal-btn">Show Answer</button>
         </div>
@@ -73,7 +76,6 @@
 </div>
 
 <script>
-// Your existing JavaScript stays the same
 function toggleAnswer() {
     const answer = document.getElementById('card-answer');
     const btn = document.querySelector('.reveal-btn');
@@ -98,8 +100,22 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function displayCard(clickedCard) {
-    console.log('Card clicked:', clickedCard.getAttribute('data-question'));
-
+    // Get the card data from data attributes
+    const question = clickedCard.getAttribute('data-question');
+    const answer = clickedCard.getAttribute('data-answer');
+    
+    // Update the center column content
+    document.getElementById('active-question').textContent = question;
+    document.getElementById('active-answer').textContent = answer;
+    
+    // Hide the answer and reset button text
+    const answerDiv = document.getElementById('card-answer');
+    const btn = document.querySelector('.reveal-btn');
+    
+    answerDiv.style.display = 'none';
+    btn.textContent = 'Show Answer';
+    
+    console.log('Card updated:', question);
 }
 </script>
 {% endblock %}
