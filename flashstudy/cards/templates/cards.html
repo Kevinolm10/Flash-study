@@ -69,5 +69,20 @@ function toggleAnswer() {
         btn.textContent = 'Show Answer';
     }
 }
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card-content[data-card-id]');
+    
+    cards.forEach(card => {
+        card.addEventListener('click', function() {
+            displayCard(this); // 'this' refers to the clicked card
+        });
+    });
+});
+
+function displayCard(clickedCard) {
+    // Your display logic here
+    console.log('Card clicked:', clickedCard.getAttribute('data-question'));
+}
+
 </script>
 {% endblock %}
