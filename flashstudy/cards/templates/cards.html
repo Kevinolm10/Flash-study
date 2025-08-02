@@ -1,40 +1,55 @@
 {% extends "base.html" %}
 {% load static %}
+{% csrf_token %}
+
 {% block content %}
+<!-- Study Controls Header -->
+<div class="study-header">
+    <div class="study-controls-top">
+        <div class="search-container">
+            <input type="text" id="card-search" placeholder="Search cards..." />
+            <button id="search-btn">🔍</button>
+        </div>
+        <div class="filter-container">
+            <select id="deck-filter">
+                <option value="">All Decks</option>
+                {% for deck in decks %}
+                <option value="{{ deck.id }}">{{ deck.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="study-info">
+            {% if profile %}
+            <span class="streak-info">🔥 {{ profile.current_streak }} day streak</span>
+            <span class="cards-studied">📚 {{ profile.total_cards_studied }} cards studied</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 <!-- Left Column: Card Stack -->
 <div class="card-area left">
     <div class="card-container">
-        <h2>All Cards</h2>
-        {% if page_obj %}
-            {% for card in page_obj %}
-	 <div class="card-content" 
-          data-card-id="{{ card.id }}"
-          data-question="{{ card.question }}"
-          data-answer="{{ card.answer }}">
-    	 <h3>{{ card.question|truncatewords:5 }}</h3>
-   	 <p class="card-deck">{{ card.deck.name }}</p>
-	</div>
-        	{% endfor %}
-            
-            <!-- Add pagination controls -->
-            <div class="pagination">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1">&laquo; First</a>
-                    <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                {% endif %}
-
-                <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                </span>
-
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">Next</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
-                {% endif %}
+        <h2>Study Queue <span id="card-count">({{ cards|length }})</span></h2>
+        <div class="queue-controls">
+            <button id="shuffle-cards" class="control-btn">🔀 Shuffle</button>
+            <button id="reset-queue" class="control-btn">🔄 Reset</button>
+        </div>
+        {% if cards %}
+            <div id="cards-list">
+                {% for card in cards %}
+                <div class="card-content" data-card-id="{{ card.id }}" data-deck="{{ card.deck.name|lower }}">
+                    <h3>{{ card.question|truncatewords:5 }}</h3>
+                    <p class="card-deck">{{ card.deck.name }}</p>
+                    {% if card.is_due_for_review %}
+                    <span class="due-indicator">📅 Due</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
             </div>
         {% else %}
             <div class="card-content">
-                <p>No cards available. <a href="/admin/">Create some cards</a> in the admin panel!</p>
+                <p>No cards available for study. <a href="/admin/">Create some cards</a> in the admin panel!</p>
             </div>
         {% endif %}
     </div>
@@ -42,80 +57,109 @@
 
 <!-- Center Column: Active Card -->
 <div class="card-area center">
-    {% if page_obj %}
-        {% with page_obj.object_list.first as first_card %}
-        <div class="card-content active" id="active-card">
-            <h2 id="active-question">{{ first_card.question }}</h2>
-            <div class="card-answer" id="card-answer" style="display: none;">
-                <p><strong>Answer:</strong> <span id="active-answer">{{ first_card.answer }}</span></p>
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text">
+            <span id="current-card-num">1</span> / <span id="total-cards">{{ cards|length }}</span>
+        </div>
+    </div>
+
+    {% if cards %}
+        {% with cards.first as first_card %}
+        <div class="card-content active" id="active-card" data-card-id="{{ first_card.id }}">
+            <div class="card-header">
+                <span class="card-deck-badge">{{ first_card.deck.name }}</span>
+                <div class="card-timer" id="card-timer">00:00</div>
             </div>
-            <button onclick="toggleAnswer()" class="reveal-btn">Show Answer</button>
+            <h2 id="card-question">{{ first_card.question }}</h2>
+            <div class="card-answer" id="card-answer" style="display: none;">
+                <p><strong>Answer:</strong> <span id="card-answer-text">{{ first_card.answer }}</span></p>
+            </div>
+            <div class="card-actions">
+                <button class="reveal-btn">Show Answer</button>
+                <div class="navigation-buttons">
+                    <button id="prev-card" class="nav-btn">← Previous</button>
+                    <button id="next-card" class="nav-btn">Next →</button>
+                </div>
+            </div>
         </div>
         {% endwith %}
     {% else %}
         <div class="card-content active">
             <h2>No cards to study</h2>
             <p>Create some flashcards first!</p>
+            <a href="/admin/cards/card/add/" class="btn btn-primary">Add Your First Card</a>
         </div>
     {% endif %}
 </div>
 
-<!-- Rest of your template stays the same -->
+<!-- Right Column: Study Tools -->
 <div class="card-area right">
-    <h2 style="text-align: center;">Study Notes</h2>
-    <textarea placeholder="Write your notes here..."></textarea>
-    <button>Save Notes</button>
-    
+    <!-- Session Statistics -->
+    <div class="session-stats">
+        <h3>Session Progress</h3>
+        <div class="stat-row">
+            <span>Cards Studied:</span>
+            <span id="session-cards">0</span>
+        </div>
+        <div class="stat-row">
+            <span>Correct:</span>
+            <span id="session-correct">0</span>
+        </div>
+        <div class="stat-row">
+            <span>Session Time:</span>
+            <span id="session-time">00:00</span>
+        </div>
+        <div class="stat-row">
+            <span>Accuracy:</span>
+            <span id="session-accuracy">0%</span>
+        </div>
+    </div>
+
+    <!-- Study Notes -->
+    <div class="notes-section">
+        <h3>Study Notes</h3>
+        <textarea id="study-notes" placeholder="Write your notes for this card..."></textarea>
+        <button id="save-notes-btn" class="save-btn">💾 Save Notes</button>
+    </div>
+
+    <!-- Difficulty Rating -->
     <div class="study-controls">
         <h3>How did you do?</h3>
-        <button class="difficulty-btn" data-difficulty="1">Again</button>
-        <button class="difficulty-btn" data-difficulty="2">Hard</button>
-        <button class="difficulty-btn" data-difficulty="3">Good</button>
-        <button class="difficulty-btn" data-difficulty="4">Easy</button>
+        <div class="difficulty-buttons">
+            <button class="difficulty-btn again" data-difficulty="1">
+                <span class="btn-icon">😰</span>
+                <span class="btn-text">Again</span>
+                <span class="btn-time">&lt; 1 min</span>
+            </button>
+            <button class="difficulty-btn hard" data-difficulty="2">
+                <span class="btn-icon">😅</span>
+                <span class="btn-text">Hard</span>
+                <span class="btn-time">&lt; 6 min</span>
+            </button>
+            <button class="difficulty-btn good" data-difficulty="3">
+                <span class="btn-icon">😊</span>
+                <span class="btn-text">Good</span>
+                <span class="btn-time">&lt; 10 min</span>
+            </button>
+            <button class="difficulty-btn easy" data-difficulty="4">
+                <span class="btn-icon">😎</span>
+                <span class="btn-text">Easy</span>
+                <span class="btn-time">4 days</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <button id="mark-known" class="action-btn">✅ Mark as Known</button>
+        <button id="mark-difficult" class="action-btn">❌ Mark as Difficult</button>
+        <button id="skip-card" class="action-btn">⏭️ Skip Card</button>
     </div>
 </div>
 
-<script>
-function toggleAnswer() {
-    const answer = document.getElementById('card-answer');
-    const btn = document.querySelector('.reveal-btn');
-    
-    if (answer.style.display === 'none') {
-        answer.style.display = 'block';
-        btn.textContent = 'Hide Answer';
-    } else {
-        answer.style.display = 'none';
-        btn.textContent = 'Show Answer';
-    }
-}
 
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.card-content[data-card-id]');
-    
-    cards.forEach(card => {
-        card.addEventListener('click', function() {
-            displayCard(this);
-        });
-    });
-});
-
-function displayCard(clickedCard) {
-    // Get the card data from data attributes
-    const question = clickedCard.getAttribute('data-question');
-    const answer = clickedCard.getAttribute('data-answer');
-    
-    // Update the center column content
-    document.getElementById('active-question').textContent = question;
-    document.getElementById('active-answer').textContent = answer;
-    
-    // Hide the answer and reset button text
-    const answerDiv = document.getElementById('card-answer');
-    const btn = document.querySelector('.reveal-btn');
-    
-    answerDiv.style.display = 'none';
-    btn.textContent = 'Show Answer';
-    
-    console.log('Card updated:', question);
-}
-</script>
 {% endblock %}
