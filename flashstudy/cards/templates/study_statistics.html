@@ -59,8 +59,9 @@
                     {% if stat.difficulty == 4 %}Easy{% endif %}
                 </span>
                 <div class="difficulty-bar">
+                    {% widthratio stat.count total_sessions 100 as width_percentage %}
                     <div class="difficulty-fill difficulty-{{ stat.difficulty }}"
-                         style="width: {% widthratio stat.count total_sessions 100 %}%"></div>
+                         data-width="{{ width_percentage }}"></div>
                 </div>
                 <span class="difficulty-count">{{ stat.count }}</span>
             </div>
@@ -308,4 +309,15 @@
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set width for difficulty bars based on data-width attribute
+    const difficultyFills = document.querySelectorAll('.difficulty-fill[data-width]');
+    difficultyFills.forEach(function(fill) {
+        const width = fill.getAttribute('data-width');
+        fill.style.width = width + '%';
+    });
+});
+</script>
 {% endblock %}
